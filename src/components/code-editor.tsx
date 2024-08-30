@@ -1,8 +1,11 @@
 import './code-editor.css';
+import './syntax.css';
+import { useRef } from 'react';
 import Editor, { EditorDidMount } from '@monaco-editor/react';
 import prettier from 'prettier';
 import parser from 'prettier/parser-babel';
-import { useRef } from 'react';
+import codeShift from 'jscodeshift';
+import Highlighter from 'monaco-jsx-highlighter';
 
 interface CodeEditorProps {
     initialValue: string;
@@ -10,7 +13,7 @@ interface CodeEditorProps {
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
-    const editorRef = useRef<any>(null);
+    const editorRef = useRef<any>();
 
     const onEditorDidMount: EditorDidMount = (getValue, monacoEditor) => {
         editorRef.current = monacoEditor;
@@ -19,6 +22,19 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
         });
 
         monacoEditor.getModel()?.updateOptions({ tabSize: 2 });
+
+        const highlighter = new Highlighter(
+            // @ts-ignore
+            window.monaco,
+            codeShift,
+            monacoEditor
+        );
+        highlighter.highLightOnDidChangeModelContent(
+            () => {},
+            () => {},
+            undefined,
+            () => {}
+        );
     };
 
     const onFormatClick = () => {
@@ -48,7 +64,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ initialValue, onChange }) => {
             <Editor
                 editorDidMount={onEditorDidMount}
                 value={initialValue}
-                height="20vh"
+                height="50vh"
                 theme="dark"
                 language="javascript"
                 options={{
